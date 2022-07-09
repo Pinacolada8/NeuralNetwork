@@ -6,6 +6,7 @@ using MathNet.Numerics.LinearAlgebra.Double;
 using NeuralNetwork;
 using NeuralNetwork.ChartUtils;
 using NeuralNetwork.Models;
+using Utils;
 
 
 Console.WriteLine("Started Execution");
@@ -34,17 +35,29 @@ var data = unformattedData
 
 const double trainingDataPercentage = 0.7;
 
+var dataSeparatedByLabel = data.ToLookup(x => x.Label);
+var trainingData = new List<Sample>();
+var testData = new List<Sample>();
 
+foreach (var dataByLabel in dataSeparatedByLabel)
+{
+    var trainingQty = Convert.ToInt32(Math.Ceiling(dataByLabel.Count() * trainingDataPercentage));
+    var trainingDataByLabel = dataByLabel.PickRandom(trainingQty).AsList()!;
+    var testDataByLabel = dataByLabel.Except(trainingDataByLabel);
+
+    trainingData.AddRange(trainingDataByLabel);
+    testData.AddRange(testDataByLabel);
+}
 
 
 /* =========================================
- * Executing Neural Network
+ * Executing Neural Network for Step function
  * ========================================= */
 
-const string title = $"====> Neural Network Wheat Detection <====";
+const string title = $"====> (Step) Neural Network 'wheat' Detection <====";
 Console.WriteLine(title);
 
-var perceptron = new Perceptron(3, 7)
+var perceptronStep = new Perceptron(3, 7)
 {
     ResultTransformFunc = (result) =>
     {
@@ -52,17 +65,46 @@ var perceptron = new Perceptron(3, 7)
         result.Clear();
         result[maxValue.Item1, maxValue.Item2] = 1;
         return result;
-        //result.MapInplace(x => 1 / (1 + Math.Exp(-x)), Zeros.Include);
-        //return result;
     }
 };
 
-perceptron.Train(data);
+perceptronStep.Train(trainingData);
 
-Console.WriteLine($"Weights: {perceptron.Weights}");
-Console.WriteLine($"Bias: {perceptron.Bias}");
+Console.WriteLine($"Weights: {perceptronStep.Weights}");
+Console.WriteLine($"Bias: {perceptronStep.Bias}");
 
-ChartUtils.PlotNeuralNetwork(perceptron, title);
+var testResults = testData.Select(x => perceptronStep.CalcResultStatistics(x)).AsList()!;
+
+Console.WriteLine($"Accuracy: {testResults.Average(x => x.CorrectResult ? 1 : 0)}");
+
+ChartUtils.PlotNeuralNetwork(perceptronStep, title, testResults);
+
+/* =========================================
+ * Executing Neural Network for Sigmoid function
+ * ========================================= */
+
+const string titleSig = $"====>(Sigmoid) Neural Network 'wheat' Detection <====";
+Console.WriteLine(titleSig);
+
+var perceptronSig = new Perceptron(3, 7)
+{
+    ResultTransformFunc = (result) =>
+    {
+        result.MapInplace(x => 1 / (1 + Math.Exp(-x)), Zeros.Include);
+        return result;
+    }
+};
+
+perceptronSig.Train(trainingData);
+
+Console.WriteLine($"Weights: {perceptronSig.Weights}");
+Console.WriteLine($"Bias: {perceptronSig.Bias}");
+
+var testResultsSig = testData.Select(x => perceptronSig.CalcResultStatistics(x)).AsList()!;
+
+Console.WriteLine($"Accuracy: {testResultsSig.Average(x => x.CorrectResult ? 1 : 0)}");
+
+ChartUtils.PlotNeuralNetwork(perceptronSig, titleSig, testResultsSig);
 
 /* =========================================
  * Finishing Program

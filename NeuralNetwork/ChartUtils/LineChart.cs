@@ -1,13 +1,15 @@
 ﻿using Plotly.NET;
 using Plotly.NET.LayoutObjects;
 using Microsoft.FSharp.Core;
+using Utils;
 
 namespace NeuralNetwork.ChartUtils;
 public class ChartUtils
 {
-
-    public static void PlotNeuralNetwork(Perceptron perceptron, string title)
+    public static void PlotNeuralNetwork(Perceptron perceptron, string title, IEnumerable<Perceptron.NNResultStatistics> testResults = null)
     {
+        var testResultsList = testResults.AsList() ?? new List<Perceptron.NNResultStatistics>();
+
         var errorHistory = perceptron.SquaredErrorHistory;
         var xValues = errorHistory.Select(x => x.Key);
         var yValues = errorHistory.Select(x => x.Value);
@@ -26,8 +28,8 @@ public class ChartUtils
         layout.SetValue("xaxis", xAxis);
         layout.SetValue("yaxis", yAxis);
         layout.SetValue("showlegend", true);
-        layout.SetValue("width", 1600);
-        layout.SetValue("height", 900);
+        layout.SetValue("width", 1280);
+        layout.SetValue("height", 720);
 
         var titleObj = new Title();
         titleObj.SetValue("text", title);
@@ -41,9 +43,12 @@ public class ChartUtils
         trace.SetValue("name", title);
 
         var description = new ChartDescription(
-            "Neural Network",
+            "<b style='font-size:30px;'>Neural Network</b>",
+            $"<b style='font-size:20px;'>Accuracy:</b> {testResultsList.Average(x => x.CorrectResult ? 1 : 0)}"            +
+            $"<br/>"                                                                               +
+            $"<br/>"                                                                               +
             $"Weights: { perceptron.Weights.ToString().Replace("\n", "<br/>").Replace(" ", "_") }" +
-            $"<br/>" +
+            $"<br/>"                                                                               +
             $"Bias: {perceptron.Bias.ToString().Replace("\n", "<br/>").Replace(" ", "_")}");
 
         var chart = GenericChart
@@ -54,6 +59,5 @@ public class ChartUtils
         //chart.SaveSVG("out/chart");
         chart.Show();
 
-        Console.WriteLine("HERE");
     }
 }

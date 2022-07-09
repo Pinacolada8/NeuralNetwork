@@ -16,16 +16,21 @@ $ dotnet run
 
 # Execution
 ## Execution Parameters
-| Parameter            	| Value 	            |
-|----------------------	|-------	            |
-| Max iterations    	| 1000    	            |
-| Evalutation Function  | any			        |
+| Parameter            	| Value 	                     |
+|----------------------	|-------	                     |
+| Max iterations    	| 1000    	                     |
+| Evalutation Function  | Step + Sigmoid                 |
+| Learning Rate         | 0.01 Regressive (LR / (i*0.1)) |
 
 
 ## Execution Result Charts
 
-### Initial Population
-![Chart](Images/Initial-Pop.png)
+### **Using Step evaluation funcion**
+![Step](Images/Wheat_step_1000Iter.png)
+
+### **Using Sigmoid evaluation funcion**
+![Step](Images/Wheat_sigmoid_1000Iter.png)
+
 
 
 ----

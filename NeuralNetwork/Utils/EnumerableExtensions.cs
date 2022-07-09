@@ -53,5 +53,16 @@ namespace Utils
                 return false;
             }
         }
+
+        public static IEnumerable<T> PickRandom<T>(this IEnumerable<T> source, int qty)
+        {
+            var random = new Random();
+
+            var randomOrder = source.OrderBy(x => random.Next());
+
+            var result = randomOrder.Take(qty);
+
+            return result;
+        }
     }
 }

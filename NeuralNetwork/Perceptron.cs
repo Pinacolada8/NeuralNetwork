@@ -14,7 +14,7 @@ public class Perceptron
     public int NumberOfInputs { get; }
 
     public int DefaultIterationCount { get; set; } = 1000;
-    public double LearningRate { get; set; } = 0.1;
+    public double LearningRate { get; set; } = 0.01;
     public Func<Matrix<double>, Matrix<double>> ResultTransformFunc = matrix => matrix;
 
     public Matrix<double> Weights { get; private set; }
@@ -41,26 +41,59 @@ public class Perceptron
         return transformedResult;
     }
 
+    public class NNResultStatistics
+    {
+        public Matrix<double> Result { get; set; } = null!;
+
+        public Matrix<double> Error { get; set; } = null!;
+
+        public bool CorrectResult { get; set; }
+
+        public double SquaredError { get; set; }
+    }
+
+    public NNResultStatistics CalcResultStatistics(Sample sample)
+    {
+        var calcResult = CalcResult(sample);
+        var expectedResult = sample.ExpectedResult.ToColumnMatrix();
+
+        var resultError = expectedResult - calcResult;
+
+        var expectedResultMaxIndex = expectedResult.EnumerateIndexed().MaxBy(x => x.Item3);
+        var resultMaxIndex = calcResult.EnumerateIndexed().MaxBy(x => x.Item3);
+        
+
+
+        var statistics = new NNResultStatistics()
+        {
+            Result = calcResult,
+            Error = resultError,
+            CorrectResult = resultMaxIndex.Item1 == expectedResultMaxIndex.Item1, 
+            SquaredError = resultError.PointwisePower(2).ColumnSums().First()
+    };
+        
+        return statistics;
+    }
+
     /// <summary>
     /// Trains the neural network using a input sample.
     /// </summary>
     /// <param name="sample">Sample to use in training</param>
     /// <param name="learningRateOverride"></param>
     /// <returns>The error of the training</returns>
-    public Matrix<double> Train(Sample sample, double? learningRateOverride = null)
+    public NNResultStatistics Train(Sample sample, double? learningRateOverride = null)
     {
-        var calcResult = CalcResult(sample);
         var sampleX = sample.X.ToRowMatrix();
-        var expectedResult = sample.ExpectedResult.ToColumnMatrix();
 
-        var learningRate = learningRateOverride ?? LearningRate;
+        var statistics = CalcResultStatistics(sample);
+        var resultError = statistics.Error;
 
-        var resultError = expectedResult - calcResult;
+       var learningRate = learningRateOverride ?? LearningRate;
 
         Weights += learningRate * resultError * sampleX;
         Bias += learningRate * resultError;
 
-        return resultError;
+        return statistics;
     }
 
     public void Train(IEnumerable<Sample> samples, int? iterations = null)
@@ -77,8 +110,7 @@ public class Perceptron
             {
                 var error = Train(sample, LearningRate / ((i + 1) * 0.1));
                 //var error = Train(sample, LearningRate);
-                var squaredError = error.PointwisePower(2).ColumnSums().First();
-                squaredErrorSum += squaredError;
+                squaredErrorSum += error.SquaredError;
             }
 
             SquaredErrorHistory[i] = squaredErrorSum;
