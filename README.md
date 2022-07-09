@@ -9,6 +9,7 @@ You can use any IDE you feel confortable editing, but Visual Studio is preferred
 ## Executing
 Execution:
 ````bash
+$ cd "NeuralNetwork"
 $ dotnet run
 ````
 

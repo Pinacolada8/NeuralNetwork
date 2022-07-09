@@ -6,9 +6,9 @@ using Utils;
 namespace NeuralNetwork.ChartUtils;
 public class ChartUtils
 {
-    public static void PlotNeuralNetwork(Perceptron perceptron, string title, IEnumerable<Perceptron.NNResultStatistics> testResults = null)
+    public static void PlotNeuralNetwork(Perceptron perceptron, string title, IEnumerable<Perceptron.NNResultStatistics>? testResults = null)
     {
-        var testResultsList = testResults.AsList() ?? new List<Perceptron.NNResultStatistics>();
+        var testResultsList = testResults?.AsList() ?? new List<Perceptron.NNResultStatistics>();
 
         var errorHistory = perceptron.SquaredErrorHistory;
         var xValues = errorHistory.Select(x => x.Key);
