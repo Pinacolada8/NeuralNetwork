@@ -1,5 +1,6 @@
 ﻿using Plotly.NET;
 using Plotly.NET.LayoutObjects;
+using Microsoft.FSharp.Core;
 
 namespace NeuralNetwork.ChartUtils;
 public class ChartUtils

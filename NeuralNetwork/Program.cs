@@ -7,16 +7,17 @@ using NeuralNetwork;
 using NeuralNetwork.ChartUtils;
 using NeuralNetwork.Models;
 
+
 Console.WriteLine("Started Execution");
 
 /* =========================================
  * READING DATA
  * ========================================= */
 
-DataReader.CSV_CONFIGURATION.Delimiter = " ";
-DataReader.CSV_CONFIGURATION.WhiteSpaceChars = Array.Empty<char>();
+DataReader.CSV_CONFIGURATION.Delimiter = "\t";
+//DataReader.CSV_CONFIGURATION.WhiteSpaceChars = Array.Empty<char>();
 
-var unformattedData = DataReader.ReadData<dynamic>("Files/column_3C.dat");
+var unformattedData = DataReader.ReadData<dynamic>("Files/seeds_dataset.txt");
 
 var data = unformattedData
            .Select(x => ((IDictionary<string, object>)x).Values)
@@ -27,17 +28,23 @@ var data = unformattedData
                ExpectedResult = GetExpectedResultFromLabel((string)x.Last())
            }).ToList();
 
-// Print input data
-//foreach(var o in data)
-//    Console.WriteLine(JsonSerializer.Serialize(o));
-
 /* =========================================
- * Calculate using Step evaluation function
+ * Choosing training and testing data
  * ========================================= */
 
-Console.WriteLine($"====> Neural Network Step Function");
+const double trainingDataPercentage = 0.7;
 
-var perceptronStep = new Perceptron(3, 6)
+
+
+
+/* =========================================
+ * Executing Neural Network
+ * ========================================= */
+
+const string title = $"====> Neural Network Wheat Detection <====";
+Console.WriteLine(title);
+
+var perceptron = new Perceptron(3, 7)
 {
     ResultTransformFunc = (result) =>
     {
@@ -45,38 +52,17 @@ var perceptronStep = new Perceptron(3, 6)
         result.Clear();
         result[maxValue.Item1, maxValue.Item2] = 1;
         return result;
+        //result.MapInplace(x => 1 / (1 + Math.Exp(-x)), Zeros.Include);
+        //return result;
     }
 };
 
-perceptronStep.Train(data);
+perceptron.Train(data);
 
-Console.WriteLine($"Weights: {perceptronStep.Weights}");
-Console.WriteLine($"Bias: {perceptronStep.Bias}");
+Console.WriteLine($"Weights: {perceptron.Weights}");
+Console.WriteLine($"Bias: {perceptron.Bias}");
 
-ChartUtils.PlotNeuralNetwork(perceptronStep, "Neural Network Step Function");
-
-/* =========================================
- * Calculate using Sigmoid evaluation function
- * ========================================= */
-
-Console.WriteLine($"====> Neural Network Sigmoid Function");
-
-var perceptronSigmoid = new Perceptron(3, 6)
-{
-    ResultTransformFunc = (result) =>
-    {
-        result.MapInplace(x => 1/(1 + Math.Exp(-x)) , Zeros.Include);
-        return result;
-    }
-};
-
-perceptronSigmoid.Train(data);
-
-Console.WriteLine($"Weights: {perceptronSigmoid.Weights}");
-Console.WriteLine($"Bias: {perceptronSigmoid.Bias}");
-
-ChartUtils.PlotNeuralNetwork(perceptronSigmoid, "Neural Network Sigmoid Function");
-
+ChartUtils.PlotNeuralNetwork(perceptron, title);
 
 /* =========================================
  * Finishing Program
@@ -90,9 +76,9 @@ static Vector<double> GetExpectedResultFromLabel(string label)
 {
     var result = Vector.Build.Dense(new[]
     {
-        "NO".Equals(label) ? 1.0 : 0.0,
-        "SL".Equals(label) ? 1.0 : 0.0,
-        "DH".Equals(label) ? 1.0 : 0.0,
+        "1".Equals(label) ? 1.0 : 0.0,
+        "2".Equals(label) ? 1.0 : 0.0,
+        "3".Equals(label) ? 1.0 : 0.0,
     });
 
     return result;

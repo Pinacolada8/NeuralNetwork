@@ -45,7 +45,7 @@ public class Perceptron
     /// Trains the neural network using a input sample.
     /// </summary>
     /// <param name="sample">Sample to use in training</param>
-    /// <param name="learningRate"></param>
+    /// <param name="learningRateOverride"></param>
     /// <returns>The error of the training</returns>
     public Matrix<double> Train(Sample sample, double? learningRateOverride = null)
     {
@@ -58,7 +58,7 @@ public class Perceptron
         var resultError = expectedResult - calcResult;
 
         Weights += learningRate * resultError * sampleX;
-        Bias += learningRate    * resultError;
+        Bias += learningRate * resultError;
 
         return resultError;
     }
@@ -70,12 +70,12 @@ public class Perceptron
         var samplesList = samples.AsList() ?? new List<Sample>();
         var squaredErrorSum = 1.0;
 
-        for (var i = 0; i < iterations && squaredErrorSum > 0; i++)
+        for(var i = 0; i < iterations && squaredErrorSum > 0; i++)
         {
             squaredErrorSum = 0.0;
             foreach(var sample in samplesList)
             {
-                var error = Train(sample, LearningRate / ((i + 1)*0.1));
+                var error = Train(sample, LearningRate / ((i + 1) * 0.1));
                 //var error = Train(sample, LearningRate);
                 var squaredError = error.PointwisePower(2).ColumnSums().First();
                 squaredErrorSum += squaredError;

@@ -19,7 +19,7 @@ $ dotnet run
 | Parameter            	| Value 	            |
 |----------------------	|-------	            |
 | Max iterations    	| 1000    	            |
-| Evalutation Function  | Step + Sigmoid        |
+| Evalutation Function  | any			        |
 
 
 ## Execution Result Charts
